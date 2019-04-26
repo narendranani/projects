@@ -1,3 +1,5 @@
+import argparse
+from datetime import datetime
 from utilities import get_api_data, get_db_connection, insert_into_db, load_json, get_params, create_stg_table, \
     truncate_table, drop_stg_table, get_insert_query
 
@@ -58,7 +60,7 @@ def load_to_main_table():
         truncate_table(cs, TABLE)
         query = f"""
         INSERT INTO {TABLE} (Number, opened_at, short_description, priority, state, category, assignment_group, assigned_to, sys_updated_on, sys_updated_by, closed_at)
-        SELECT Number, stg.opened_at, stg.short_description, SP.priority, stg.state, stg.category, 
+        SELECT Number, stg.opened_at, stg.short_description, SP.priority, SIS.state, stg.category, 
             AG.name, SU.name , stg.sys_updated_on, stg.sys_updated_by, stg.closed_at 
         FROM {STG_TABLE} STG
         LEFT JOIN [dbo].[SNOW_API_Assignment_Group] AG
@@ -67,6 +69,8 @@ def load_to_main_table():
             ON STG.assigned_to = SU.sys_id   
         LEFT JOIN dbo.SNOW_Priority SP
             ON STG.Priority = SP.Id
+        LEFT JOIN SNOW_Incident_State SIS
+            ON STG.State = SIS.Id
         """
         cs.execute(query)
         cs.commit()
@@ -81,9 +85,20 @@ def load_to_main_table():
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '-c', '--config',
+        help="Config File",
+        required=True)
+    parser.add_argument(
+        '-s', '--schema',
+        help="Schema File",
+        required=True)
+    args = parser.parse_args()
+    print(datetime.now())
     print('Started migration')
-    config = load_json('config.json')
-    schema = load_json('schema.json')
+    config = load_json(args.config)
+    schema = load_json(args.schema)
     columns = schema["schema"]["incident"]
     column_names = [fields['field'] for fields in columns]
     insert_to_stage(config['api_details'], columns, column_names)

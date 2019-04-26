@@ -1,5 +1,7 @@
 from utilities import get_api_data, get_db_connection, insert_into_db, load_json, get_params, create_stg_table, \
     truncate_table, drop_stg_table, get_insert_query
+from datetime import datetime
+import argparse
 
 TABLE = 'SNOW_API_Assignment_Group'
 STG_TABLE = 'STG_SNOW_API_Assignment_Group'
@@ -30,7 +32,7 @@ def insert_to_stage(api_details, columns):
         for idx, data in enumerate(get_data(api_details, columns)):
             # print(f'data: {data}')
             if data:
-                insert_query = get_insert_query(STG_TABLE,columns, data)
+                insert_query = get_insert_query(STG_TABLE, columns, data)
                 # print(f'insert_query: {insert_query}')
                 cs.execute(insert_query)
                 # insert_into_db(cs, data, STG_TABLE, columns)
@@ -45,7 +47,8 @@ def load_to_main_table():
         cnx = get_db_connection(auto_commit=False)
         cs = cnx.cursor()
         truncate_table(cs, TABLE)
-        query = f'INSERT INTO {TABLE} SELECT * FROM {STG_TABLE}'
+        query = f"""INSERT INTO {TABLE}(sys_id, name, description, sys_created_on, sys_created_by, sys_updated_on, sys_updated_by) 
+                    SELECT sys_id, name, description, sys_created_on, sys_created_by, sys_updated_on, sys_updated_by FROM {STG_TABLE}"""
         cs.execute(query)
         cs.commit()
     except Exception as e:
@@ -59,11 +62,20 @@ def load_to_main_table():
 
 
 if __name__ == '__main__':
-    from datetime import datetime
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '-c', '--config',
+        help="Config File",
+        required=True)
+    parser.add_argument(
+        '-s', '--schema',
+        help="Schema File",
+        required=True)
+    args = parser.parse_args()
     print(datetime.now())
     print('Started migration')
-    config = load_json('config.json')
-    schema = load_json('schema.json')
+    config = load_json(args.config)
+    schema = load_json(args.schema)
     columns = schema["schema"]["assignment_group"]
     insert_to_stage(config['api_details'], columns)
     print('Loaded to Stage table')

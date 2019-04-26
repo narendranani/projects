@@ -1,22 +1,21 @@
 {
   "api_details": {
-    "username":"testuser",
-    "password":"Hyderabad007",
+    "username":"report.user",
+    "password":"Report@123",
     "url": {
-      "incident": "https://xxxxxxx.com/api/now/table/incident",
-      "service": "https://xxxxxxx.com/api/now/table/sc_req_item",
-      "sys_user": "https://xxxxxxx.com/api/now/table/sys_user",
-      "assignment_group": "https://xxxxxxx.com/api/now/table/sys_user_group",
-      "request": "https://xxxxxxx.com/api/now/table/sc_request",
-      "change_request": "https://xxxxxxx.com/api/now/table/change_request"
+      "incident": "https://comscore.service-now.com/api/now/table/incident",
+      "service": "https://comscore.service-now.com/api/now/table/sc_req_item",
+      "sys_user": "https://comscore.service-now.com/api/now/table/sys_user",
+      "assignment_group": "https://comscore.service-now.com/api/now/table/sys_user_group",
+      "change_request": "https://comscore.service-now.com/api/now/table/change_request"
     }
   },
   "db_credentials": {
     "Trusted_Connection": "no",
     "driver": "{SQL Server}",
-    "server": "cvqewe01",
-    "database": "sample",
-    "user": "sa",
-    "password": "xxxxxxxx"
+    "server": "CVIADCM01",
+    "database": "ConsolidatedKPIs",
+    "user": "nkommoju",
+    "password": "Hyderabad445"
   }
 }

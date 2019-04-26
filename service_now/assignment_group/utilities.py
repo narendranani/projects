@@ -1,7 +1,7 @@
-import requests
-import json
 import base64
+import json
 import pyodbc
+import requests
 
 
 class ApiCallError(Exception):
@@ -15,7 +15,7 @@ def load_json(path):
 
 def _check_status(server_response, success_code):
     if server_response.status_code != success_code:
-        error_message = server_response.json()['error']['message'] + f". Detail: {server_response.json()['error']['detail']}"
+        error_message = server_response['error']['message'] + f". Detail: {server_response['error']['detail']}"
         raise ApiCallError(error_message)
     return
 
@@ -73,6 +73,8 @@ def insert_into_db(cs, data, table, columns):
 
 def get_insert_query(table_name, columns, data):
     inert_query = f"insert into {table_name}({','.join(columns)}) values"
-    rows = ['(' + ','.join('NULL' if not value else "'" + value.replace("'", "''") + "'" for value in row) + ')' for row
+    rows = ['(' + ','.join(
+        "'" + value.replace("'", "''") + "'" if isinstance(value, str) else 'NULL' if not value else str(value) for
+        value in row) + ')' for row
             in data]
     return inert_query + ',\n'.join(rows)

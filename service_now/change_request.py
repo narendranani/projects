@@ -1,3 +1,5 @@
+from datetime import datetime
+import argparse
 from utilities import get_api_data, get_db_connection, insert_into_db, load_json, get_params, create_stg_table, \
     truncate_table, drop_stg_table, get_insert_query
 
@@ -61,18 +63,25 @@ def load_to_main_table():
         truncate_table(cs, TABLE)
         query = f"""
         INSERT INTO {TABLE} (Number, requested_by, State, type, Category, product, Priority, risk, Impact, short_description, assignment_group, 
-                                assigned_to, jira_reference, On_hold, Cab_required, opened_at, closed_at, Review_date, approval_set)
-            SELECT stg.Number, RSU.name as requested_by, stg.State, stg.type, stg.Category, stg.product, SP.Priority, stg.risk, stg.Impact, stg.short_description, 
-                AG.name as assignment_group, ASU.name as assigned_to, stg.jira_reference, stg.On_hold, stg.Cab_required, stg.opened_at, stg.closed_at, stg.Review_date, stg.approval_set 
-            FROM {STG_TABLE} STG
-            LEFT JOIN [dbo].[SNOW_API_Assignment_Group] AG
-                ON STG.assignment_group = AG.sys_id  
-            LEFT JOIN [dbo].[SNOW_API_System_User] RSU
-                ON STG.requested_by = RSU.sys_id   
-            LEFT JOIN [dbo].[SNOW_API_System_User] ASU
-                ON STG.assigned_to = ASU.sys_id     
-            LEFT JOIN dbo.SNOW_Priority SP
-                ON STG.Priority = SP.Id
+                                assigned_to, jira_reference, On_hold, Cab_required, opened_at, closed_at, Review_date)
+        SELECT stg.Number, RSU.name as requested_by, CRS.State, stg.type, stg.Category, stg.product, SP.Priority, CRR.risk, 
+                CRI.Impact, stg.short_description,AG.name as assignment_group, ASU.name as assigned_to, stg.jira_reference, 
+                stg.On_hold, stg.Cab_required, stg.opened_at, stg.closed_at, stg.Review_date
+        FROM {STG_TABLE} STG
+        LEFT JOIN [dbo].[SNOW_API_Assignment_Group] AG
+            ON STG.assignment_group = AG.sys_id  
+        LEFT JOIN [dbo].[SNOW_API_System_User] RSU
+            ON STG.requested_by = RSU.sys_id   
+        LEFT JOIN [dbo].[SNOW_API_System_User] ASU
+            ON STG.assigned_to = ASU.sys_id     
+        LEFT JOIN dbo.SNOW_Priority SP
+            ON STG.Priority = SP.Id
+        LEFT JOIN SNOW_Change_Request_State CRS
+            ON STG.State = CRS.Id
+        LEFT JOIN SNOW_Change_Request_Risk CRR
+            ON STG.Risk = CRR.Id
+        LEFT JOIN SNOW_Change_Request_Impact CRI
+            ON STG.Impact = CRI.Id
         """
         cs.execute(query)
         cs.commit()
@@ -87,11 +96,20 @@ def load_to_main_table():
 
 
 if __name__ == '__main__':
-    from datetime import datetime
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '-c', '--config',
+        help="Config File",
+        required=True)
+    parser.add_argument(
+        '-s', '--schema',
+        help="Schema File",
+        required=True)
+    args = parser.parse_args()
     print(datetime.now())
     print('Started migration')
-    config = load_json('config.json')
-    schema = load_json('schema.json')
+    config = load_json(args.config)
+    schema = load_json(args.schema)
     columns = schema["schema"]["change_request"]
     column_names = [fields['field'] for fields in columns]
     insert_to_stage(config['api_details'], columns, column_names)

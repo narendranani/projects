@@ -1,3 +1,5 @@
+import argparse
+from datetime import datetime
 from utilities import get_api_data, get_db_connection, insert_into_db, load_json, get_params, create_stg_table, \
     truncate_table, drop_stg_table, get_insert_query
 
@@ -56,7 +58,8 @@ def load_to_main_table():
         cnx = get_db_connection(auto_commit=False)
         cs = cnx.cursor()
         truncate_table(cs, TABLE)
-        query = f'INSERT INTO {TABLE} SELECT * FROM {STG_TABLE}'
+        query = f"""INSERT INTO {TABLE}(sys_id, number, requested_for, sys_updated_on, closed_by, sys_created_on, closed_at) 
+                SELECT sys_id, number, requested_for, sys_updated_on, closed_by, sys_created_on, closed_at FROM {STG_TABLE}"""
         cs.execute(query)
         cs.commit()
     except Exception as e:
@@ -70,11 +73,20 @@ def load_to_main_table():
 
 
 if __name__ == '__main__':
-    from datetime import datetime
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '-c', '--config',
+        help="Config File",
+        required=True)
+    parser.add_argument(
+        '-s', '--schema',
+        help="Schema File",
+        required=True)
+    args = parser.parse_args()
     print(datetime.now())
     print('Started migration')
-    config = load_json('config.json')
-    schema = load_json('schema.json')
+    config = load_json(args.config)
+    schema = load_json(args.schema)
     columns = schema["schema"]["request"]
     column_names = [fields['field'] for fields in columns]
     insert_to_stage(config['api_details'], columns, column_names)

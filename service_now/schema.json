@@ -78,10 +78,6 @@
         "value": false
       },
       {
-        "field": "request",
-        "value": true
-      },
-      {
         "field": "due_date",
         "value": false
       },
@@ -216,10 +212,6 @@
       },
       {
         "field": "review_date",
-        "value": false
-      },
-      {
-        "field": "approval_set",
         "value": false
       }
     ]

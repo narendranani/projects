@@ -1,20 +1,17 @@
-import argparse
-from datetime import datetime
-import logging
 from utilities import get_api_data, get_db_connection, insert_into_db, load_json, get_params, create_stg_table, \
     truncate_table, drop_stg_table, get_insert_query
+from datetime import datetime
+import argparse
 
-
-TABLE = 'SNOW_API_System_User'
-STG_TABLE = 'STG_S' \
-            'PI_System_User'
+TABLE = 'SNOW_API_Assignment_Group'
+STG_TABLE = 'STG_SNOW_API_Assignment_Group'
 BATCH = 1000
 
 
 def get_data(api_details, columns):
     params = get_params(columns)
     data = \
-        get_api_data(api_details["url"]["sys_user"], api_details["username"], api_details["password"],
+        get_api_data(api_details["url"]["assignment_group"], api_details["username"], api_details["password"],
                      params=params)[
             "result"].__iter__()
     while True:
@@ -35,7 +32,7 @@ def insert_to_stage(api_details, columns):
         for idx, data in enumerate(get_data(api_details, columns)):
             # print(f'data: {data}')
             if data:
-                insert_query = get_insert_query(STG_TABLE, columns, data)
+                insert_query = get_insert_query(STG_TABLE,columns, data)
                 # print(f'insert_query: {insert_query}')
                 cs.execute(insert_query)
                 # insert_into_db(cs, data, STG_TABLE, columns)
@@ -50,8 +47,7 @@ def load_to_main_table():
         cnx = get_db_connection(auto_commit=False)
         cs = cnx.cursor()
         truncate_table(cs, TABLE)
-        query = f"""INSERT INTO {TABLE}(sys_id, name, first_name, middle_name, last_name, mobile_phone, city, street, sys_created_on, sys_created_by, sys_updated_on, sys_updated_by) 
-                    SELECT sys_id, name, first_name, middle_name, last_name, mobile_phone, city, street, sys_created_on, sys_created_by, sys_updated_on, sys_updated_by FROM {STG_TABLE}"""
+        query = f'INSERT INTO {TABLE} SELECT * FROM {STG_TABLE}'
         cs.execute(query)
         cs.commit()
     except Exception as e:
@@ -79,8 +75,9 @@ if __name__ == '__main__':
     print('Started migration')
     config = load_json(args.config)
     schema = load_json(args.schema)
-    columns = schema["schema"]["sys_user"]
+    columns = schema["schema"]["assignment_group"]
     insert_to_stage(config['api_details'], columns)
     print('Loaded to Stage table')
     load_to_main_table()
-    print('Successfully Loaded to Stage table')
+    print('Successfully Loaded to Main table')
+    print(datetime.now())
