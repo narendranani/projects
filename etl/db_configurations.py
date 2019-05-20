@@ -4,10 +4,10 @@ source_sqlserver = {
     "credentials": {
         'Trusted_Connection': 'no',
         'driver': '{SQL Server}',
-        'server': 'ggku2ser9',
-        'database': 'Ruffalo_NarenTest',
+        'server': 'NARENDRA/SQLExpress',
+        'database': 'Test',
         'user': 'sa',
-        'password': 'Hyderabad007',
+        'password': 'xxxxxxxxxxxxx',
         'autocommit': False,
     },
     "schema": "dbo",
@@ -21,10 +21,10 @@ target_sqlserver = {
     "credentials": {
         'Trusted_Connection': 'no',
         'driver': '{SQL Server}',
-        'server': 'ggku2ser9',
-        'database': 'Ruffalo_NarenTest',
+        'server': 'NARENDRA/SQLExpress',
+        'database': 'Test',
         'user': 'sa',
-        'password': 'Hyderabad007',
+        'password': 'xxxxxxxxxxx',
         'autocommit': False,
     },
     "schema": "dbo",
@@ -52,8 +52,8 @@ redshift = {
     "credentials": {
         "host": "dj-analytics-stage.internal.demandjump.net",
         "port": "5439",
-        "user": "ggk_user",
-        "password": "FsNSwbNw5DJq46Ut",
+        "user": "Test",
+        "password": "xxxxxxxxxxxx",
         "dbname": "analyticsdb"
     },
     "schema": "",
