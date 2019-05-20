@@ -50,7 +50,7 @@ mysql = {
 redshift = {
     "name": "redshift",
     "credentials": {
-        "host": "dj-analytics-stage.internal.demandjump.net",
+        "host": "NARENDRA/REDSHIFT",
         "port": "5439",
         "user": "Test",
         "password": "xxxxxxxxxxxx",
